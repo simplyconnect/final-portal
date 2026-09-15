@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simply Connect — Attendance Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ================= LOGIN (split screen) ================= -->
+<div id="loginScreen" class="login-split">
+
+  <div class="login-left">
+    <div class="login-card">
+      <div class="login-bar"></div>
+      <img class="login-logo" src="img/logo-dark.png" alt="Simply Connect" onerror="this.style.display='none'">
+      <h1>Welcome Back</h1>
+      <p class="login-sub">Sign in with your company account to view attendance and payroll.</p>
+      <form id="loginForm">
+        <label>Username
+          <input type="text" id="loginUsername" autocomplete="username" placeholder="Please enter your name" required>
+        </label>
+        <label>Password
+          <div class="password-field">
+            <input type="password" id="loginPassword" autocomplete="current-password" placeholder="Please enter your password" required>
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Show password" tabindex="-1">
+              <svg class="ic-eye" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              <svg class="ic-eye-off hidden" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.94 10.94 0 0 1 12 20c-7 0-11-8-11-8a19.86 19.86 0 0 1 5.06-5.94M9.9 4.24A10.94 10.94 0 0 1 12 4c7 0 11 8 11 8a19.86 19.86 0 0 1-3.22 4.44M14.12 14.12a3 3 0 1 1-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+            </button>
+          </div>
+        </label>
+        <div id="loginError" class="login-error hidden"></div>
+        <button type="submit" class="btn-primary" id="loginBtn">Login</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-bg">
+      <div class="blob blob-1"></div>
+      <div class="blob blob-2"></div>
+      <div class="blob blob-3"></div>
+    </div>
+    <div class="login-right-inner">
+      <img class="login-right-logo" src="img/logo-light.png" alt="Simply Connect" onerror="this.style.display='none'">
+      <h2 class="login-right-title">Modernize your <span class="accent">HR operations</span></h2>
+
+      <div class="login-carousel" id="loginCarousel"></div>
+      <button class="carousel-arrow prev" id="carouselPrev" aria-label="Previous">&#8249;</button>
+      <button class="carousel-arrow next" id="carouselNext" aria-label="Next">&#8250;</button>
+      <div class="login-dots" id="loginDots"></div>
+
+      <p class="login-right-sub">Live attendance, payroll, and approvals — all in one intuitive platform built for Simply Connect.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ================= APP SHELL ================= -->
+<div id="appShell" class="app-shell hidden">
+  <aside class="sidebar">
+    <div class="grid-icon">&#8942;&#8942;</div>
+    <button class="nav-item active" data-page="dashboard" data-role="all"><span class="ic">&#8962;</span>Home</button>
+    <button class="nav-item" data-page="employees" data-role="admin"><span class="ic">&#128101;</span>Employees</button>
+    <button class="nav-item" data-page="attendance" data-role="all"><span class="ic">&#128337;</span>Attendance</button>
+    <button class="nav-item" data-page="payroll" data-role="all"><span class="ic">&#128176;</span>Payroll</button>
+    <button class="nav-item" data-page="requests" data-role="all"><span class="ic">&#128203;</span>Requests</button>
+    <button class="nav-item" data-page="reports" data-role="admin"><span class="ic">&#128202;</span>Reports</button>
+    <button class="nav-item" data-page="devices" data-role="admin"><span class="ic">&#128225;</span>Devices</button>
+    <button class="nav-item" data-page="settings" data-role="all"><span class="ic">&#9881;</span>Settings</button>
+    <button class="nav-item logout" id="logoutBtn"><span class="ic">&#8630;</span>Sign out</button>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <img class="tb-logo" src="img/logo-dark.png" alt="Simply Connect" onerror="this.style.display='none'">
+      <div class="tb-company">Simply Connect <span class="caret">&#9662;</span></div>
+      <div class="topbar-right">
+        <div class="tb-icon" title="Help">?</div>
+        <div class="tb-icon" title="Notifications">&#128276;<span class="dot"></span></div>
+        <div class="tb-icon" title="Settings">&#9881;</div>
+        <div class="tb-avatar" id="topbarAvatar">--</div>
+      </div>
+    </header>
+
+    <main class="content">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="pageDashboard">
+      <div class="kpi-row" id="kpiRow">
+        <!-- KPI cards injected by app.js. Admin: company-wide totals. Employee: personal totals. -->
+      </div>
+
+      <div class="dash-grid">
+        <div class="card welcome-card">
+          <div class="welcome-illustration">&#128075;</div>
+          <div style="flex:1;">
+            <h3 id="welcomeName">Welcome</h3>
+            <p class="card-sub" id="welcomeDate"></p>
+            <div class="clock-row">
+              <div class="clock-item"><span class="status-dot in"></span><span id="clockInVal">Clock In — —</span></div>
+              <div class="clock-item"><span class="status-dot out"></span><span id="clockOutVal">Clock Out — —</span></div>
+            </div>
+            <div class="today-hours" id="todayHours">— <span style="font-size:13px;font-weight:500;color:var(--muted);">hrs today</span></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Pending Tasks</h3>
+          <p class="card-sub">Approvals waiting on you</p>
+          <div class="empty-mini" id="pendingTasksBox"><div class="ic">&#9989;</div>No pending tasks</div>
+        </div>
+
+        <div class="card calendar-card">
+          <div class="cal-nav"><h3>Events</h3><div style="display:flex;gap:4px;"><button id="calPrev">&#8249;</button><button id="calNext">&#8250;</button></div></div>
+          <div class="cal-grid" id="calGrid"></div>
+          <div class="events-today"><div class="big-emoji">&#127881;</div>No events scheduled today</div>
+        </div>
+
+        <div class="card admin-only" style="grid-column: span 2;">
+          <h3>Who is Off</h3>
+          <p class="card-sub" id="whoIsOffSub">Approved leave today</p>
+          <div class="empty-mini" id="whoIsOffBox"><div class="ic">&#128100;</div>Loading&hellip;</div>
+        </div>
+      </div>
+
+      <div class="filter-bar admin-only" id="dashFilterBar">
+        <label>From<input type="date" id="dashFrom"></label>
+        <label>To<input type="date" id="dashTo"></label>
+        <label>Department<input placeholder="All departments" id="dashDept"></label>
+        <label>Status<select id="dashStatus"><option value="">All statuses</option><option>Present</option><option>Absent</option><option>Late</option><option>Half-Day</option><option>Leave</option></select></label>
+        <div class="spacer"></div>
+        <button class="btn-secondary" id="dashApplyFilters">Apply filters</button>
+      </div>
+
+      <div class="table-wrap">
+        <div class="table-head-row"><h3 id="dashTableTitle">Attendance — Today</h3></div>
+        <table>
+          <thead><tr><th>Date</th><th>Employee ID</th><th>Name</th><th>Department</th><th>Time In</th><th>Time Out</th><th>Hours</th><th>OT</th><th>Status</th></tr></thead>
+          <tbody id="dashAttendanceBody">
+            <tr><td colspan="9" class="table-loading">Loading attendance&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section><!-- /pageDashboard -->
+
+    <!-- ---------- ATTENDANCE (shared, scoped by role in JS) ---------- -->
+    <section id="pageAttendance" class="hidden">
+      <div class="filter-bar">
+        <label>From<input type="date" id="attFrom"></label>
+        <label>To<input type="date" id="attTo"></label>
+        <label class="admin-only">Department<input placeholder="All departments" id="attDept"></label>
+        <label class="admin-only">Employee<input placeholder="Name or ID" id="attEmp"></label>
+        <div class="spacer"></div>
+        <button class="btn-secondary" id="attApplyFilters">Apply filters</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-head-row"><h3 id="attTableTitle">Attendance</h3></div>
+        <table>
+          <thead id="attTableHead"></thead>
+          <tbody id="attTableBody">
+            <tr><td colspan="9" class="table-loading">Loading attendance&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section><!-- /pageAttendance -->
+
+    <!-- ---------- PAYROLL ---------- -->
+    <section id="pagePayroll" class="hidden">
+
+      <!-- Admin: company-wide payroll table -->
+      <div id="payrollAdminView" class="admin-only hidden">
+        <div class="kpi-row payroll-kpi" id="payrollKpiRow"></div>
+        <div class="filter-bar">
+          <label>Payroll month<input type="month" id="payMonth"></label>
+          <label>Department<input placeholder="All departments" id="payDept"></label>
+          <label>Search<input placeholder="Name or Employee ID" id="paySearch"></label>
+          <div class="spacer"></div>
+          <button class="btn-secondary" id="payApplyFilters">Apply filters</button>
+        </div>
+        <div class="table-wrap" style="margin-bottom:22px;">
+          <div class="table-head-row"><h3 id="payTableTitle">Payroll</h3></div>
+          <table>
+            <thead><tr><th>ID</th><th>Name</th><th>Department</th><th>Basic</th><th>Allowances</th><th>Present / Absent</th><th>OT Pay</th><th>Deductions</th><th>Net Salary</th><th>Status</th><th></th></tr></thead>
+            <tbody id="payrollTableBody">
+              <tr><td colspan="11" class="table-loading">Loading payroll&hellip;</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Employee: own payslip + PDF download -->
+      <div id="payrollEmployeeView" class="employee-only hidden">
+        <div class="filter-bar">
+          <label>Payslip month<input type="month" id="empPayMonth"></label>
+          <div class="spacer"></div>
+          <button class="btn-primary" id="downloadPayslipBtn" style="width:auto;padding:10px 20px;">&#11015; Download Payslip PDF</button>
+        </div>
+        <div id="empPayslipCard" class="payslip-card">
+          <div class="table-loading">Loading your payslip&hellip;</div>
+        </div>
+      </div>
+
+      <div id="payslipDetail" class="payslip-card hidden"></div>
+    </section><!-- /pagePayroll -->
+
+    <!-- ---------- REQUESTS ---------- -->
+    <section id="pageRequests" class="hidden">
+      <div class="table-head-row" style="background:var(--paper);border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;padding:16px 20px;">
+        <h3 id="requestsTitle">Leave &amp; Regularization Requests</h3>
+        <div class="spacer"></div>
+        <button class="btn-primary employee-only" id="newRequestBtn" style="width:auto;padding:9px 18px;">+ New request</button>
+      </div>
+      <div class="table-wrap" style="border-radius:0 0 var(--radius) var(--radius);">
+        <table>
+          <thead><tr><th>Dates</th><th class="admin-only-col">Employee</th><th>Type</th><th>Reason</th><th>Status</th><th class="admin-only-col">Approved By</th><th class="admin-only-col"></th></tr></thead>
+          <tbody id="requestsTableBody">
+            <tr><td colspan="7" class="table-loading">Loading requests&hellip;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section><!-- /pageRequests -->
+
+    <!-- ---------- EMPLOYEES (admin only) ---------- -->
+    <section id="pageEmployees" class="hidden admin-only">
+      <div class="emp-toolbar">
+        <input type="text" placeholder="Search by name, ID or department" id="empSearchInput">
+        <select id="empDeptFilter"><option value="">All departments</option></select>
+        <select id="empStatusFilter"><option value="">All statuses</option><option>Active</option><option>Inactive</option></select>
+        <div class="view-toggle"><button class="active" data-view="grid">Grid</button><button data-view="table">Table</button></div>
+        <span class="emp-count" id="empCount">Loading&hellip;</span>
+      </div>
+      <div class="emp-grid" id="empGrid">
+        <div class="table-loading">Loading employees&hellip;</div>
+      </div>
+    </section><!-- /pageEmployees -->
+
+    <!-- ---------- EMPLOYEE PROFILE (admin drill-down) ---------- -->
+    <section id="pageEmployeeProfile" class="hidden admin-only">
+      <button class="back-link" id="backToEmployeesBtn">&#8592; Back to employees</button>
+
+      <div class="profile-banner">
+        <div class="profile-avatar-lg" id="profAvatar">--</div>
+        <div class="profile-banner-info">
+          <h2 id="profName">—</h2>
+          <div class="role-line" id="profRoleLine">—</div>
+          <div class="profile-banner-tags" id="profTags"></div>
+        </div>
+      </div>
+
+      <div class="profile-tabs">
+        <button class="active" data-ptab="overview">Overview</button>
+        <button data-ptab="attendance">Attendance</button>
+        <button data-ptab="payroll">Payroll</button>
+      </div>
+
+      <div id="ptabOverview">
+        <div class="mini-stat-row" id="profMiniStats"></div>
+        <div class="info-grid" id="profInfoGrid"></div>
+      </div>
+
+      <div id="ptabAttendance" class="hidden">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Date</th><th>Time In</th><th>Time Out</th><th>Hours</th><th>OT</th><th>Status</th></tr></thead>
+            <tbody id="profAttendanceBody"><tr><td colspan="6" class="table-loading">Loading&hellip;</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="ptabPayroll" class="hidden">
+        <div id="profPayslipCard" class="payslip-card"><div class="table-loading">Loading&hellip;</div></div>
+      </div>
+    </section><!-- /pageEmployeeProfile -->
+
+    <!-- ---------- REPORTS (admin only) ---------- -->
+    <section id="pageReports" class="hidden admin-only">
+      <div class="card"><h3>Reports</h3><p class="card-sub">Company-wide attendance, payroll and headcount reports. Extend this section with the exports your team needs.</p></div>
+    </section>
+
+    <!-- ---------- DEVICES (admin only) ---------- -->
+    <section id="pageDevices" class="hidden admin-only">
+      <div class="card"><h3>Biometric Devices</h3><p class="card-sub">Status of ZKTeco terminals feeding attendance into this system.</p></div>
+      <div class="table-wrap" style="margin-top:16px;">
+        <table>
+          <thead><tr><th>Device</th><th>Location</th><th>IP Address</th><th>Last sync</th><th>Status</th></tr></thead>
+          <tbody id="devicesTableBody"><tr><td colspan="5" class="table-loading">Loading&hellip;</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section id="pageSettings" class="hidden">
+      <div class="card"><h3>Account</h3><p class="card-sub" id="settingsAccountInfo">—</p></div>
+    </section>
+
+    </main>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
